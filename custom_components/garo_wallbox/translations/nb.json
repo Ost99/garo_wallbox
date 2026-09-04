@@ -241,6 +241,9 @@
     "number": {
       "current_limit": {
         "name": "Strømbegrensning"
+      },
+      "load_balancing_power_limit": {
+        "name": "Effektgrense for lastbalansering"
       }
     },
     "switch": {

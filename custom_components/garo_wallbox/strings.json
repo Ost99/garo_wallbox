@@ -241,6 +241,9 @@
     "number": {
       "current_limit": {
         "name": "Current Limit"
+      },
+      "load_balancing_power_limit": {
+        "name": "Load-balancing Power Limit"
       }
     },
     "switch": {

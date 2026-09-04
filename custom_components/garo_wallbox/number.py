@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 
 from homeassistant.core import HomeAssistant
-from homeassistant.const import EntityCategory
+from homeassistant.const import EntityCategory, UnitOfPower
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.components.number import (
     NumberDeviceClass,
@@ -50,6 +50,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: GaroConfigEntry, async_a
                 get_value=lambda status: status.current_limit,
                 set_value=lambda value: coordinator.async_set_current_limit(value),
                 is_available=lambda: coordinator.config.charge_limit_enabled,
+            ),
+            GaroNumberEntityDescription(
+                key="load_balancing_power_limit",
+                translation_key="load_balancing_power_limit",
+                name="Load-balancing Power Limit",
+                icon="mdi:transmission-tower",
+                device_class=NumberDeviceClass.POWER,
+                native_max_value=250,
+                native_min_value=5,
+                native_step=1,
+                native_unit_of_measurement=UnitOfPower.KILO_WATT,
+                mode=NumberMode.BOX,
+                get_value=lambda status: coordinator.load_balancing_power,
+                set_value=lambda value: coordinator.async_set_load_balancing_power(value),
+                is_available=lambda: coordinator.config.group_load_balanced,
             ),
         ]]
     if entry.runtime_data.meter_coordinator:
