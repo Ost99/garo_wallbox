@@ -15,6 +15,7 @@ This is a custom component to allow control of Garo Wallboxes in [HomeAssistant]
 </p>
 
 #### Support Development
+Support the original author:
 - :coffee:&nbsp;&nbsp;[Buy me a coffee](https://www.buymeacoffee.com/sockless)
 
 
@@ -22,7 +23,8 @@ This is a custom component to allow control of Garo Wallboxes in [HomeAssistant]
 
 ### Install using HACS (recomended)
 If you do not have HACS installed yet visit https://hacs.xyz for installation instructions.
-In HACS go to the Integrations section hit the big + at the bottom right and search for **Garo Wallbox**.
+In HACS open the top-right menu and select custom repositories
+Enter https://github.com/Ost99/garo_wallbox and selecty type "Integration"
 
 ### Install manually
 Clone or copy this repository and copy the folder 'custom_components/garo_wallbox' into '<homeassistant config>/custom_components/garo_wallbox'
