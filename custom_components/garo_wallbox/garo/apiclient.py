@@ -156,19 +156,36 @@ class ApiClient:
             lb_config.load(data)
         return lb_config
 
-    async def async_set_lb_fuse(self, fuse: int):
+    async def async_set_lb_value(self, field: str, value: int) -> GaroLBConfig:
+        """Set one LB value while preserving and reading back the full config."""
+        valid_fields = {
+            'loadBalancingFuse',
+            'loadBalancingPower',
+            'loadBalancingFuse101',
+            'loadBalancingPower101',
+        }
+        if field not in valid_fields:
+            raise ValueError(f'Unsupported load-balancing field: {field}')
+
         response = await self._async_get('lbconfig/false', True)
         response_json = await response.json()
-        response_json['loadBalancingFuse'] = fuse
-        response = await self._async_post(self._get_url('lbconfig'), data=response_json)
+        response_json[field] = int(value)
+        response = await self._async_post(
+            self._get_url('lbconfig'), data=response_json)
         await response.text()
+        return await self.async_get_lb_config()
+
+    async def async_set_lb_fuse(self, fuse: int):
+        return await self.async_set_lb_value('loadBalancingFuse', fuse)
 
     async def async_set_lb_fuse101(self, fuse: int):
-        response = await self._async_get('lbconfig/false', True)
-        response_json = await response.json()
-        response_json['loadBalancingFuse101'] = fuse
-        response = await self._async_post(self._get_url('lbconfig'), data=response_json)
-        await response.text()
+        return await self.async_set_lb_value('loadBalancingFuse101', fuse)
+
+    async def async_set_lb_power(self, power: int):
+        return await self.async_set_lb_value('loadBalancingPower', power)
+
+    async def async_set_lb_power101(self, power: int):
+        return await self.async_set_lb_value('loadBalancingPower101', power)
 
     async def async_set_rfid_mode(self, enabled: bool):
         response = await self._async_post(self._get_url(f'rfidmode/{str(enabled).lower()}'))

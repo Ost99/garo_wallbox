@@ -251,6 +251,18 @@
     "number": {
       "current_limit": {
         "name": "Strømbegrensning"
+      },
+      "load_balancing_current_100": {
+        "name": "Strømgrense for måler 100"
+      },
+      "load_balancing_power_100": {
+        "name": "Effektgrense for måler 100"
+      },
+      "load_balancing_current_101": {
+        "name": "Strømgrense for måler 101"
+      },
+      "load_balancing_power_101": {
+        "name": "Effektgrense for måler 101"
       }
     },
     "switch": {

@@ -251,6 +251,18 @@
     "number": {
       "current_limit": {
         "name": "Straumavgrensing"
+      },
+      "load_balancing_current_100": {
+        "name": "Straumgrense for målar 100"
+      },
+      "load_balancing_power_100": {
+        "name": "Effektgrense for målar 100"
+      },
+      "load_balancing_current_101": {
+        "name": "Straumgrense for målar 101"
+      },
+      "load_balancing_power_101": {
+        "name": "Effektgrense for målar 101"
       }
     },
     "switch": {

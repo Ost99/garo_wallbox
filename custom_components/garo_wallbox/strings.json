@@ -272,6 +272,18 @@
       },
       "lb_main_fuse": {
         "name": "Main Fuse"
+      },
+      "load_balancing_current_100": {
+        "name": "Meter 100 Current Limit"
+      },
+      "load_balancing_power_100": {
+        "name": "Meter 100 Power Limit"
+      },
+      "load_balancing_current_101": {
+        "name": "Meter 101 Current Limit"
+      },
+      "load_balancing_power_101": {
+        "name": "Meter 101 Power Limit"
       }
     },
     "switch": {
