@@ -122,7 +122,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: GaroConfigEntry, async_a
             set_power: Callable[[int], Awaitable],
         ):
             charger_count = (
-                1 + len(configuration.slaves) + (1 if configuration.has_twin else 0)
+                1 + len(coordinator.slaves) + (1 if configuration.has_twin else 0)
             )
             add_lb_entity(
                 meter,
