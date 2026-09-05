@@ -66,6 +66,72 @@ async def async_setup_entry(hass: HomeAssistant, entry: GaroConfigEntry, async_a
         if meter_coordinator.has_central101_meter:
             add_meter_entities(meter_coordinator.central101_meter)
 
+        def add_load_balancing_switch(
+            meter: GaroMeter,
+            key: str,
+            name: str,
+            icon: str,
+            on_func: Callable[[], Awaitable],
+            off_func: Callable[[], Awaitable],
+            get_state: Callable[[], bool],
+        ):
+            entities.append(GaroLoadBalancingSwitchEntity(
+                meter_coordinator,
+                coordinator,
+                entry,
+                GaroSwitchEntityDescription(
+                    key=key,
+                    translation_key=key,
+                    name=name,
+                    icon=icon,
+                    on_func=on_func,
+                    off_func=off_func,
+                    get_state=get_state,
+                ),
+                meter,
+            ))
+
+        if meter_coordinator.has_lb_config and (
+            meter_coordinator.has_central100_meter
+            or meter_coordinator.has_central101_meter
+        ):
+            primary_meter = (
+                meter_coordinator.central100_meter
+                if meter_coordinator.has_central100_meter
+                else meter_coordinator.central101_meter
+            )
+            add_load_balancing_switch(
+                primary_meter,
+                "load_balancing_enabled",
+                "Load Balancing",
+                "mdi:scale-balance",
+                lambda: meter_coordinator.async_set_lb_enabled(True),
+                lambda: meter_coordinator.async_set_lb_enabled(False),
+                lambda: meter_coordinator.lb_config.enabled,
+            )
+
+            if meter_coordinator.has_central100_meter:
+                add_load_balancing_switch(
+                    meter_coordinator.central100_meter,
+                    "load_balancing_power_enabled_100",
+                    "Use Meter 100 Power Limit",
+                    "mdi:transmission-tower",
+                    lambda: meter_coordinator.async_set_lb_power(5),
+                    lambda: meter_coordinator.async_set_lb_power(0),
+                    lambda: meter_coordinator.lb_config.power > 0,
+                )
+
+            if meter_coordinator.has_central101_meter:
+                add_load_balancing_switch(
+                    meter_coordinator.central101_meter,
+                    "load_balancing_power_enabled_101",
+                    "Use Meter 101 Power Limit",
+                    "mdi:transmission-tower",
+                    lambda: meter_coordinator.async_set_lb_power101(5),
+                    lambda: meter_coordinator.async_set_lb_power101(0),
+                    lambda: meter_coordinator.lb_config.power101 > 0,
+                )
+
     async_add_entities(entities)
 
 
@@ -122,4 +188,34 @@ class GaroMeterSwitchEntity(GaroMeterEntity, SwitchEntity):
         """Turn off the Switch."""
         await self.entity_description.off_func()
         self._attr_is_on = False
+        self.async_write_ha_state()
+
+
+class GaroLoadBalancingSwitchEntity(GaroMeterSwitchEntity):
+    """Switch entity grouped under the load-balancing device."""
+
+    def __init__(
+        self,
+        coordinator: GaroMeterCoordinator,
+        device_coordinator: GaroDeviceCoordinator,
+        entry,
+        description: GaroSwitchEntityDescription,
+        meter: GaroMeter,
+    ):
+        super().__init__(coordinator, entry, description, meter)
+        self._attr_unique_id = (
+            f"{device_coordinator.device_id}-load_balancing-{description.key}"
+        )
+        self._attr_device_info = device_coordinator.load_balancing_device_info
+
+    async def async_turn_on(self, **kwargs):
+        """Turn on the switch and keep the API readback as the source of truth."""
+        await self.entity_description.on_func()
+        self._async_update_attrs()
+        self.async_write_ha_state()
+
+    async def async_turn_off(self, **kwargs):
+        """Turn off the switch and keep the API readback as the source of truth."""
+        await self.entity_description.off_func()
+        self._async_update_attrs()
         self.async_write_ha_state()
