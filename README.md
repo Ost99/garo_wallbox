@@ -2,8 +2,7 @@
 
 [![GitHub Release][releases-shield]][releases]
 [![License][license-shield]](LICENSE)
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
-[![Integration Usage](https://img.shields.io/badge/dynamic/json?color=41BDF5&style=for-the-badge&logo=home-assistant&label=usage&suffix=%20installs&cacheSeconds=15600&url=https://analytics.home-assistant.io/custom_integrations.json&query=$.garo_wallbox.total)](https://analytics.home-assistant.io/)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-red.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
 
 This is a custom component to allow control of Garo Wallboxes in [HomeAssistant](https://home-assistant.io).
@@ -15,6 +14,7 @@ This is a custom component to allow control of Garo Wallboxes in [HomeAssistant]
 </p>
 
 #### Support Development
+Support the original author:
 - :coffee:&nbsp;&nbsp;[Buy me a coffee](https://www.buymeacoffee.com/sockless)
 
 
@@ -22,7 +22,8 @@ This is a custom component to allow control of Garo Wallboxes in [HomeAssistant]
 
 ### Install using HACS (recomended)
 If you do not have HACS installed yet visit https://hacs.xyz for installation instructions.
-In HACS go to the Integrations section hit the big + at the bottom right and search for **Garo Wallbox**.
+In HACS open the top-right menu and select custom repositories
+Enter https://github.com/Ost99/garo_wallbox and selecty type "Integration"
 
 ### Install manually
 Clone or copy this repository and copy the folder 'custom_components/garo_wallbox' into '<homeassistant config>/custom_components/garo_wallbox'
@@ -49,6 +50,6 @@ Service: `garo_wallbox.set_current_limit`
 | limit | The new limit in Ampare | 10 |
 
 
-[license-shield]: https://img.shields.io/github/license/sockless-coding/garo_wallbox.svg?style=for-the-badge
-[releases-shield]: https://img.shields.io/github/release/sockless-coding/garo_wallbox.svg?style=for-the-badge
-[releases]: https://github.com/sockless-coding/garo_wallbox/releases
+[license-shield]: https://img.shields.io/github/license/Ost99/garo_wallbox.svg?style=for-the-badge
+[releases-shield]: https://img.shields.io/github/release/Ost99/garo_wallbox.svg?style=for-the-badge
+[releases]: https://github.com/Ost99/garo_wallbox/releases
