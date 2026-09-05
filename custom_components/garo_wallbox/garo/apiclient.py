@@ -46,17 +46,30 @@ class ApiClient:
         response = await self._async_get('lbconfig/false', True)
         return await response.json()
 
-    async def async_set_load_balancing_power(self, limit: int) -> dict:
-        """Set the group power limit and return the value read back from GARO.
+    async def async_set_load_balancing_value(self, field: str, value: int) -> dict:
+        """Set one load-balancing value and return the complete config."""
 
-        GARO expects the complete lbconfig object. Sending a partial object can
-        overwrite unrelated load-balancing settings on older firmware.
-        """
+        valid_fields = {
+            "loadBalancingFuse",
+            "loadBalancingPower",
+            "loadBalancingFuse101",
+            "loadBalancingPower101",
+        }
+
+        if field not in valid_fields:
+            raise ValueError(f"Unsupported load-balancing field: {field}")
+
+        # GARO expects the complete configuration object.
         payload = await self.async_get_load_balancing_configuration()
-        payload['loadBalancingPower'] = int(limit)
-        response = await self._async_post(self._get_url('lbconfig'), data=payload)
+        payload[field] = int(value)
+
+        response = await self._async_post(
+            self._get_url("lbconfig"),
+            data=payload,
+        )
         response.raise_for_status()
         await response.read()
+
         return await self.async_get_load_balancing_configuration()
     
     async def async_get_slaves(self, slaves: list[GaroCharger] | None = None) -> list[GaroCharger]:

@@ -244,11 +244,18 @@
       },
       "load_balancing_power_limit": {
         "name": "Load-balancing Power Limit"
-      }
-    },
-    "switch": {
-      "charge_limit": {
-        "name": "Charge Limiter"
+      },
+      "load_balancing_current_100": {
+        "name": "Meter 100 Current Limit"
+      },
+      "load_balancing_power_100": {
+        "name": "Meter 100 Power Limit"
+      },
+      "load_balancing_current_101": {
+        "name": "Meter 101 Current Limit"
+      },
+      "load_balancing_power_101": {
+        "name": "Meter 101 Power Limit"
       }
     }
   }

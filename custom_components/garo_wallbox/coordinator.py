@@ -70,12 +70,32 @@ class GaroDeviceCoordinator(DataUpdateCoordinator[int]):
     def schema(self) -> list[GaroSchema]:
         return self._schema
 
-    @property
-    def load_balancing_power(self) -> int:
-        """Return the group power limit reported by the wallbox, in kW."""
+    
+    def _get_load_balancing_value(self, field: str) -> int:
         if self._load_balancing_config is None:
             raise ValueError("Load-balancing configuration is not initialized")
-        return int(self._load_balancing_config.get("loadBalancingPower", 0))
+
+        return int(self._load_balancing_config.get(field, 0))
+
+
+    @property
+    def load_balancing_fuse(self) -> int:
+        return self._get_load_balancing_value("loadBalancingFuse")
+
+
+    @property
+    def load_balancing_power(self) -> int:
+        return self._get_load_balancing_value("loadBalancingPower")
+
+
+    @property
+    def load_balancing_fuse101(self) -> int:
+        return self._get_load_balancing_value("loadBalancingFuse101")
+
+
+    @property
+    def load_balancing_power101(self) -> int:
+        return self._get_load_balancing_value("loadBalancingPower101")
 
     @property
     def device_info(self)->DeviceInfo:
@@ -89,7 +109,20 @@ class GaroDeviceCoordinator(DataUpdateCoordinator[int]):
             hw_version=f"{self._config.firmware_version}.{self._config.firmware_revision}"
         )
     
-
+    @property
+    def load_balancing_device_info(self) -> DeviceInfo:
+        return DeviceInfo(
+            identifiers={
+                (
+                    const.DOMAIN,
+                    f"{self._id}_load_balancing",
+                )
+            },
+            manufacturer="Garo",
+            model="Load balancer",
+            name=f"{self.main_charger_name} Load balancing",
+            via_device=(const.DOMAIN, str(self._id)),
+        )
     
     def get_charger_device_info(self, charger: GaroCharger)->DeviceInfo:
         product = self.get_product_info(charger)
@@ -154,10 +187,11 @@ class GaroDeviceCoordinator(DataUpdateCoordinator[int]):
         await self._api_client.async_set_current_limit(limit)
         await self.async_request_refresh()
 
-    async def async_set_load_balancing_power(self, limit: int):
-        """Set and read back the group load-balancing power limit."""
+    async def async_set_load_balancing_value(self, field: str, value: int):
         self._load_balancing_config = (
-            await self._api_client.async_set_load_balancing_power(limit)
+            await self._api_client.async_set_load_balancing_value(
+                field, value
+            )
         )
         self.async_update_listeners()
 
@@ -166,7 +200,7 @@ class GaroDeviceCoordinator(DataUpdateCoordinator[int]):
         try:
             self._status = await self._api_client.async_get_status(self._status)
             has_changed = self._status.has_changed
-            if self._config.group_load_balanced:
+            if (self._config.group_load_balanced or self._config.group_load_balanced101):
                 load_balancing_config = (
                     await self._api_client.async_get_load_balancing_configuration()
                 )
