@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 
 from homeassistant.core import HomeAssistant
-from homeassistant.const import EntityCategory
+from homeassistant.const import EntityCategory, UnitOfPower
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.components.number import (
     NumberDeviceClass,
@@ -78,33 +78,95 @@ async def async_setup_entry(hass: HomeAssistant, entry: GaroConfigEntry, async_a
         if meter_coordinator.has_central101_meter:
             add_meter_entities(meter_coordinator.central101_meter)
 
-        def add_lb_fuse_entity(meter: GaroMeter, get_fuse: Callable[[], int], set_fuse: Callable[[int], Awaitable]):
+        def add_lb_entity(
+            meter: GaroMeter,
+            key: str,
+            name: str,
+            icon: str,
+            maximum: int,
+            minimum: int,
+            unit: str,
+            get_value: Callable[[], int],
+            set_value: Callable[[int], Awaitable],
+            is_available: Callable[[], bool],
+            device_class: NumberDeviceClass | None = None,
+        ):
+            entities.append(GaroLoadBalancingNumberEntity(
+                meter_coordinator,
+                coordinator,
+                entry,
+                GaroMeterNumberEntityDescription(
+                    key=key,
+                    translation_key=key,
+                    name=name,
+                    icon=icon,
+                    device_class=device_class,
+                    native_max_value=maximum,
+                    native_min_value=minimum,
+                    native_step=1,
+                    native_unit_of_measurement=unit,
+                    mode=NumberMode.BOX,
+                    get_value=lambda _: get_value(),
+                    set_value=set_value,
+                    is_available=is_available,
+                ),
+                meter,
+            ))
+
+        def add_lb_meter_entities(
+            meter: GaroMeter,
+            meter_number: int,
+            get_fuse: Callable[[], int],
+            set_fuse: Callable[[int], Awaitable],
+            get_power: Callable[[], int],
+            set_power: Callable[[int], Awaitable],
+        ):
             max_fuse = 2500 if configuration.lb_version2 else 63
-            entities.append(GaroMeterNumberEntity(meter_coordinator, entry, GaroMeterNumberEntityDescription(
-                key="lb_main_fuse",
-                translation_key="lb_main_fuse",
-                name="Main Fuse",
-                icon="mdi:gauge-full",
-                native_max_value=max_fuse,
-                native_min_value=16,
-                native_step=1,
-                native_unit_of_measurement="A",
-                mode=NumberMode.BOX,
-                get_value=lambda status: get_fuse(),
-                set_value=set_fuse,
-                is_available=lambda: True,
-            ), meter))
+            add_lb_entity(
+                meter,
+                f"load_balancing_current_{meter_number}",
+                f"Meter {meter_number} Current Limit",
+                "mdi:current-ac",
+                max_fuse,
+                16,
+                "A",
+                get_fuse,
+                set_fuse,
+                lambda: True,
+            )
+            add_lb_entity(
+                meter,
+                f"load_balancing_power_{meter_number}",
+                f"Meter {meter_number} Power Limit",
+                "mdi:transmission-tower",
+                250,
+                5,
+                UnitOfPower.KILO_WATT,
+                get_power,
+                set_power,
+                lambda: get_power() > 0,
+                NumberDeviceClass.POWER,
+            )
+
         if meter_coordinator.has_lb_config:
             if meter_coordinator.has_central100_meter:
-                add_lb_fuse_entity(
+                add_lb_meter_entities(
                     meter_coordinator.central100_meter,
+                    100,
                     lambda: meter_coordinator.lb_config.fuse,
-                    meter_coordinator.async_set_lb_fuse)
+                    meter_coordinator.async_set_lb_fuse,
+                    lambda: meter_coordinator.lb_config.power,
+                    meter_coordinator.async_set_lb_power,
+                )
             if meter_coordinator.has_central101_meter:
-                add_lb_fuse_entity(
+                add_lb_meter_entities(
                     meter_coordinator.central101_meter,
+                    101,
                     lambda: meter_coordinator.lb_config.fuse101,
-                    meter_coordinator.async_set_lb_fuse101)
+                    meter_coordinator.async_set_lb_fuse101,
+                    lambda: meter_coordinator.lb_config.power101,
+                    meter_coordinator.async_set_lb_power101,
+                )
     async_add_entities(entities)
 
 
@@ -153,3 +215,27 @@ class GaroMeterNumberEntity(GaroMeterEntity, NumberEntity):
 
     def _async_update_attrs(self) -> None:
         self._attr_native_value = self.entity_description.get_value(self._meter)
+
+
+class GaroLoadBalancingNumberEntity(GaroMeterNumberEntity):
+    """Number entity grouped under a dedicated load-balancing device."""
+
+    def __init__(
+        self,
+        coordinator: GaroMeterCoordinator,
+        device_coordinator: GaroDeviceCoordinator,
+        entry,
+        description: GaroMeterNumberEntityDescription,
+        meter: GaroMeter,
+    ):
+        super().__init__(coordinator, entry, description, meter)
+        self._attr_unique_id = (
+            f"{device_coordinator.device_id}-load_balancing-{description.key}"
+        )
+        self._attr_device_info = device_coordinator.load_balancing_device_info
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Set a value and display the value read back from the charger."""
+        await self.entity_description.set_value(int(value))
+        self._async_update_attrs()
+        self.async_write_ha_state()
