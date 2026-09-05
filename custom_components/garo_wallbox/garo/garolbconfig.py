@@ -8,6 +8,8 @@ class GaroLBConfig:
         self._power = 0
         self._fuse101 = 0
         self._power101 = 0
+        self._master_load_balanced = False
+        self._slaves = []
 
         self._has_changed = False
         self.load(json)
@@ -21,12 +23,41 @@ class GaroLBConfig:
         self.power = utils.read_value(json, 'loadBalancingPower', self._power)
         self.fuse101 = utils.read_value(json, 'loadBalancingFuse101', self._fuse101)
         self.power101 = utils.read_value(json, 'loadBalancingPower101', self._power101)
+        self.master_load_balanced = bool(utils.read_value(
+            json, 'masterLoadBalanced', self._master_load_balanced))
+        self.slaves = utils.read_value(json, 'slaves', self._slaves)
 
         return self._has_changed
 
     @property
     def has_changed(self):
         return self._has_changed
+
+    @property
+    def enabled(self):
+        """True when the master and every listed charger use load balancing."""
+        return self.master_load_balanced and all(
+            bool(slave.get('loadBalanced', False)) for slave in self.slaves)
+
+    @property
+    def master_load_balanced(self):
+        return self._master_load_balanced
+    @master_load_balanced.setter
+    def master_load_balanced(self, value):
+        if self._master_load_balanced == value:
+            return
+        self._master_load_balanced = value
+        self._has_changed = True
+
+    @property
+    def slaves(self):
+        return self._slaves
+    @slaves.setter
+    def slaves(self, value):
+        if self._slaves == value:
+            return
+        self._slaves = value
+        self._has_changed = True
 
     @property
     def fuse(self):

@@ -251,11 +251,32 @@
     "number": {
       "current_limit": {
         "name": "Straumavgrensing"
+      },
+      "load_balancing_current_100": {
+        "name": "Straumgrense for målar 100"
+      },
+      "load_balancing_power_100": {
+        "name": "Effektgrense for målar 100"
+      },
+      "load_balancing_current_101": {
+        "name": "Straumgrense for målar 101"
+      },
+      "load_balancing_power_101": {
+        "name": "Effektgrense for målar 101"
       }
     },
     "switch": {
       "charge_limit": {
         "name": "Ladegrense"
+      },
+      "load_balancing_enabled": {
+        "name": "Lastbalansering"
+      },
+      "load_balancing_power_enabled_100": {
+        "name": "Bruk effektgrense for målar 100"
+      },
+      "load_balancing_power_enabled_101": {
+        "name": "Bruk effektgrense for målar 101"
       }
     }
   }

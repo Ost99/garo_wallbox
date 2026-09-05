@@ -251,11 +251,32 @@
     "number": {
       "current_limit": {
         "name": "Strömbegränsning"
+      },
+      "load_balancing_current_100": {
+        "name": "Strömgräns för mätare 100"
+      },
+      "load_balancing_power_100": {
+        "name": "Effektgräns för mätare 100"
+      },
+      "load_balancing_current_101": {
+        "name": "Strömgräns för mätare 101"
+      },
+      "load_balancing_power_101": {
+        "name": "Effektgräns för mätare 101"
       }
     },
     "switch": {
       "charge_limit": {
         "name": "Laddströmsbegränsning"
+      },
+      "load_balancing_enabled": {
+        "name": "Lastbalansering"
+      },
+      "load_balancing_power_enabled_100": {
+        "name": "Använd effektgräns för mätare 100"
+      },
+      "load_balancing_power_enabled_101": {
+        "name": "Använd effektgräns för mätare 101"
       }
     }
   }
