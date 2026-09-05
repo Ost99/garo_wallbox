@@ -251,11 +251,20 @@
     "number": {
       "current_limit": {
         "name": "Strømbegrensning"
+      },
+      "load_balancing_current_100": {
+        "name": "Strømgrense for måler 100"
+      },
+      "load_balancing_current_101": {
+        "name": "Strømgrense for måler 101"
       }
     },
     "switch": {
       "charge_limit": {
         "name": "Ladegrense"
+      },
+      "load_balancing_enabled": {
+        "name": "Lastbalansering"
       }
     }
   }
