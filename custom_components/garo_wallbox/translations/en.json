@@ -276,14 +276,8 @@
       "load_balancing_current_100": {
         "name": "Meter 100 Current Limit"
       },
-      "load_balancing_power_100": {
-        "name": "Meter 100 Power Limit"
-      },
       "load_balancing_current_101": {
         "name": "Meter 101 Current Limit"
-      },
-      "load_balancing_power_101": {
-        "name": "Meter 101 Power Limit"
       }
     },
     "switch": {
@@ -295,12 +289,6 @@
       },
       "load_balancing_enabled": {
         "name": "Load Balancing"
-      },
-      "load_balancing_power_enabled_100": {
-        "name": "Use Meter 100 Power Limit"
-      },
-      "load_balancing_power_enabled_101": {
-        "name": "Use Meter 101 Power Limit"
       }
     },
     "button": {

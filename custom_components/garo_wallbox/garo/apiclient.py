@@ -163,9 +163,7 @@ class ApiClient:
         """Set one LB value while preserving and reading back the full config."""
         valid_fields = {
             'loadBalancingFuse',
-            'loadBalancingPower',
             'loadBalancingFuse101',
-            'loadBalancingPower101',
         }
         if field not in valid_fields:
             raise ValueError(f'Unsupported load-balancing field: {field}')
@@ -184,12 +182,6 @@ class ApiClient:
 
     async def async_set_lb_fuse101(self, fuse: int):
         return await self.async_set_lb_value('loadBalancingFuse101', fuse)
-
-    async def async_set_lb_power(self, power: int):
-        return await self.async_set_lb_value('loadBalancingPower', power)
-
-    async def async_set_lb_power101(self, power: int):
-        return await self.async_set_lb_value('loadBalancingPower101', power)
 
     async def async_set_lb_enabled(self, enabled: bool) -> GaroLBConfig:
         """Enable or disable load balancing for the complete charger group."""

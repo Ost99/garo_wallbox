@@ -3,10 +3,9 @@ from dataclasses import dataclass
 
 
 from homeassistant.core import HomeAssistant
-from homeassistant.const import EntityCategory, UnitOfPower
+from homeassistant.const import EntityCategory
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.components.number import (
-    NumberDeviceClass,
     NumberEntity,
     NumberEntityDescription,
     NumberMode,
@@ -36,6 +35,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: GaroConfigEntry, async_a
     """Set up using config_entry."""
     coordinator = entry.runtime_data.coordinator
     configuration = coordinator.config
+    def load_balancing_enabled() -> bool:
+        meter_coordinator = entry.runtime_data.meter_coordinator
+        return (
+            meter_coordinator is not None
+            and meter_coordinator.has_lb_config
+            and meter_coordinator.lb_config.enabled
+        )
+
     entities:list[NumberEntity] =[
         GaroNumberEntity(coordinator, entry, description) for description in [
             GaroNumberEntityDescription(
@@ -49,7 +56,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: GaroConfigEntry, async_a
                 native_unit_of_measurement="A",
                 get_value=lambda status: status.current_limit,
                 set_value=lambda value: coordinator.async_set_current_limit(value),
-                is_available=lambda: coordinator.config.charge_limit_enabled,
+                is_available=lambda: coordinator.config.charge_limit_enabled and not load_balancing_enabled(),
             ),
         ]]
     if entry.runtime_data.meter_coordinator:
@@ -89,7 +96,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: GaroConfigEntry, async_a
             get_value: Callable[[], int],
             set_value: Callable[[int], Awaitable],
             is_available: Callable[[], bool],
-            device_class: NumberDeviceClass | None = None,
         ):
             entities.append(GaroLoadBalancingNumberEntity(
                 meter_coordinator,
@@ -100,7 +106,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: GaroConfigEntry, async_a
                     translation_key=key,
                     name=name,
                     icon=icon,
-                    device_class=device_class,
                     native_max_value=maximum,
                     native_min_value=minimum,
                     native_step=1,
@@ -118,8 +123,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: GaroConfigEntry, async_a
             meter_number: int,
             get_fuse: Callable[[], int],
             set_fuse: Callable[[int], Awaitable],
-            get_power: Callable[[], int],
-            set_power: Callable[[int], Awaitable],
         ):
             charger_count = (
                 1 + len(coordinator.slaves) + (1 if configuration.has_twin else 0)
@@ -136,19 +139,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: GaroConfigEntry, async_a
                 set_fuse,
                 lambda: True,
             )
-            add_lb_entity(
-                meter,
-                f"load_balancing_power_{meter_number}",
-                f"Meter {meter_number} Power Limit",
-                "mdi:transmission-tower",
-                charger_count * 22,
-                5,
-                UnitOfPower.KILO_WATT,
-                get_power,
-                set_power,
-                lambda: get_power() > 0,
-                NumberDeviceClass.POWER,
-            )
 
         if meter_coordinator.has_lb_config:
             if meter_coordinator.has_central100_meter:
@@ -157,8 +147,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: GaroConfigEntry, async_a
                     100,
                     lambda: meter_coordinator.lb_config.fuse,
                     meter_coordinator.async_set_lb_fuse,
-                    lambda: meter_coordinator.lb_config.power,
-                    meter_coordinator.async_set_lb_power,
                 )
             if meter_coordinator.has_central101_meter:
                 add_lb_meter_entities(
@@ -166,8 +154,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: GaroConfigEntry, async_a
                     101,
                     lambda: meter_coordinator.lb_config.fuse101,
                     meter_coordinator.async_set_lb_fuse101,
-                    lambda: meter_coordinator.lb_config.power101,
-                    meter_coordinator.async_set_lb_power101,
                 )
     async_add_entities(entities)
 
@@ -220,7 +206,7 @@ class GaroMeterNumberEntity(GaroMeterEntity, NumberEntity):
 
 
 class GaroLoadBalancingNumberEntity(GaroMeterNumberEntity):
-    """Number entity grouped under a dedicated load-balancing device."""
+    """Load-balancing number entity grouped under the master charger."""
 
     def __init__(
         self,
@@ -234,7 +220,7 @@ class GaroLoadBalancingNumberEntity(GaroMeterNumberEntity):
         self._attr_unique_id = (
             f"{device_coordinator.device_id}-load_balancing-{description.key}"
         )
-        self._attr_device_info = device_coordinator.load_balancing_device_info
+        self._attr_device_info = device_coordinator.device_info
 
     async def async_set_native_value(self, value: float) -> None:
         """Set a value and display the value read back from the charger."""
