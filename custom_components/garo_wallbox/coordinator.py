@@ -81,7 +81,20 @@ class GaroDeviceCoordinator(DataUpdateCoordinator[int]):
             hw_version=f"{self._config.firmware_version}.{self._config.firmware_revision}"
         )
 
- 
+    @property
+    def load_balancing_device_info(self) -> DeviceInfo:
+        """Return a separate device for group load-balancing controls."""
+        return DeviceInfo(
+            identifiers={(
+                const.DOMAIN,
+                f"{self._id}_load_balancing",
+            )},
+            manufacturer="Garo",
+            model="Load balancer",
+            name=f"{self.main_charger_name} Load balancing",
+            via_device=(const.DOMAIN, str(self._id)),
+        )
+    
 
     
     def get_charger_device_info(self, charger: GaroCharger)->DeviceInfo:
@@ -276,6 +289,18 @@ class GaroMeterCoordinator(DataUpdateCoordinator[int]):
 
     async def async_set_lb_fuse101(self, fuse: int):
         self._lb_config = await self._api_client.async_set_lb_fuse101(fuse)
+        self.async_update_listeners()
+
+    async def async_set_lb_power(self, power: int):
+        self._lb_config = await self._api_client.async_set_lb_power(power)
+        self.async_update_listeners()
+
+    async def async_set_lb_power101(self, power: int):
+        self._lb_config = await self._api_client.async_set_lb_power101(power)
+        self.async_update_listeners()
+
+    async def async_set_lb_enabled(self, enabled: bool):
+        self._lb_config = await self._api_client.async_set_lb_enabled(enabled)
         self.async_update_listeners()
 
     async def _fetch_device_data(self)->int:
