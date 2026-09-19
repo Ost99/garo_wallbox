@@ -32,10 +32,11 @@
     "step": {
       "init": {
         "title": "Garo Wallbox options",
-        "description": "How often Home Assistant polls the wallbox and its energy meter.",
+        "description": "How often Home Assistant polls the wallbox and its energy meter, and advanced load-balancing behavior.",
         "data": {
           "device_fetch_interval": "Device poll interval (seconds)",
-          "meter_fetch_interval": "Meter poll interval (seconds)"
+          "meter_fetch_interval": "Meter poll interval (seconds)",
+          "allow_low_dlm_current": "Allow DLM current limits down to 6 A"
         }
       }
     }
