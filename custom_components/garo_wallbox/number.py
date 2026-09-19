@@ -14,7 +14,12 @@ from homeassistant.components.number import (
 from .garo import GaroStatus, const
 from .coordinator import GaroDeviceCoordinator, GaroMeterCoordinator
 from .base import GaroEntity, GaroMeterEntity, GaroMeter
-from .const import DOMAIN,COORDINATOR
+from .const import (
+    CONF_ALLOW_LOW_DLM_CURRENT,
+    DEFAULT_ALLOW_LOW_DLM_CURRENT,
+    DOMAIN,
+    COORDINATOR,
+)
 from . import GaroConfigEntry
 
 @dataclass(frozen=True, kw_only=True)
@@ -35,6 +40,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: GaroConfigEntry, async_a
     """Set up using config_entry."""
     coordinator = entry.runtime_data.coordinator
     configuration = coordinator.config
+    lb_min_current = (
+        5
+        if entry.options.get(
+            CONF_ALLOW_LOW_DLM_CURRENT, DEFAULT_ALLOW_LOW_DLM_CURRENT
+        )
+        else 16
+    )
     def load_balancing_enabled() -> bool:
         meter_coordinator = entry.runtime_data.meter_coordinator
         return (
@@ -133,7 +145,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: GaroConfigEntry, async_a
                 f"Meter {meter_number} Current Limit",
                 "mdi:current-ac",
                 charger_count * 32,
-                16,
+                lb_min_current,
                 "A",
                 get_fuse,
                 set_fuse,
